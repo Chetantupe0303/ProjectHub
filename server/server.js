@@ -17,20 +17,21 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
 
-// CORS configuration for Vercel
+// CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
     const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',');
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
     
-    // Allow all origins in development
-    if (process.env.NODE_ENV !== 'production') {
-        return callback(null, true);
+    // Check if origin is in allowed list or is a Vercel preview URL
+    if (
+      allowedOrigins.includes(origin) || 
+      origin.endsWith('.vercel.app') ||
+      process.env.NODE_ENV !== 'production'
+    ) {
+      return callback(null, true);
     }
 
     return callback(new Error('Not allowed by CORS'));
